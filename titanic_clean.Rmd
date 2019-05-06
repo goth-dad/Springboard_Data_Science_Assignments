@@ -1,0 +1,54 @@
+---
+title: "Titanic Refine"
+author: "Madison Mendez"
+date: "1/4/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+rm(list=ls())
+setwd("~/Desktop/Data Science Course/Titanic Assignments")
+titanic <- read.csv("titanic_original.csv")
+```
+
+#Port of Embarkation
+```{r}
+titanic$embarked <- ifelse(is.na(titanic$embarked), 
+             'S', titanic$embarked)
+```
+
+#Age
+```{r}
+library(gam)
+na.gam.replace(titanic$age)
+
+##It may have been better to replace n/a values with the median rather than the mean, so the value is not skewed by outliers.
+```
+
+#Lifeboat
+```{r}
+library(gtools)
+if (invalid(titanic$boat)){
+     titanic$boat <- 'None'
+ }
+
+```
+
+#Cabin
+```{r}
+#It does not make sense to fill missing cabin numbers with a value since a missing value indicates that the person did not survive.
+
+titanic$cabin <- ifelse(is.na(titanic$cabin), 0, 1)
+
+```
+
+```{r}
+write.csv(titanic, file = "titanic_clean.csv")
+```
+

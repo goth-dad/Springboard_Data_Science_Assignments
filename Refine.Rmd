@@ -1,0 +1,154 @@
+---
+title: "Refine"
+output: html_notebook
+---
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(dummies)
+refine.df <- refine
+refine.df
+```
+
+#Clean up brand names
+```{r}
+refine.df$company <- tolower(refine.df$company)
+refine.df$company[(refine.df$company == 'phillips')] <- 'philips'
+refine.df[10, 1] <- 'akzo'
+refine.df[11, 1] <- 'akzo'
+refine.df$company[(refine.df$company == 'fillips')] <- 'philips'
+refine.df$company[(refine.df$company == 'phlips')] <- 'philips'
+refine.df$company[(refine.df$company == 'unilver')] <- 'unilever'
+```
+
+#Separate product code and number
+```{r}
+#mutate(refine.df$`Product code / number`, c("product_code", "product_number"), sep = "-")
+
+#separate(refine.df$`Product code / number`, c("product_code", "product_number"), sep = "-")
+
+#strsplit(refine.df$`Product code / number`, c("product_code", "product_number"), sep = "-")
+
+#refine.df[separate(refine.df, `Product code / number`, c("product_code", "product_number"), sep="-")]
+
+refine.df2 <- separate(refine.df, `Product code / number`, c("product_code", "product_number"), sep="-")
+```
+
+#Add product categories
+```{r}
+#refine.df$category <- if(grepl("x", refine$`Product code / number`, "Laptop")
+#                    if(grepl("p", refine$`Product code / number`, "Smartphone"))
+#                    if(grepl("v", refine$`Product code / number`, "TV"))
+#                    if(grepl("q", refine$`Product code / number`, "Tablet"))
+
+#refine.df$category <- if(refine.df$product_code == 'p') {
+#  refine.df$category = Smartphone
+#}
+# else if(refine.df$product_code == 'v') {
+#  refine.df$category = TV
+# }
+#  else if(refine.df$product_code == 'x') {
+#    refine.df$category = Laptop
+#  }
+#  else refine.df$category = Tablet
+
+#mutate(refine.df, ifelse(refine.df$product_code == p) {
+#  refine.df$category = "Smartphone"
+#}
+#  else if (refine.df$product_code == v) {
+#   refine.df$category "TV" 
+#  } 
+#  else if (refine.df$product_code == x) {
+#    refine.df$category = "Laptop"
+#  } 
+#  else {
+#    refine.df$category = "Tablet"
+#Error: unexpected '=' in "mutate(refine.df, category = ifelse(refine.df$product_code ="
+
+#if(refine.df$product_code == 'p') {
+#  refine.df$category <- "Smartphone"
+#} else {
+#  if(refine.df$product_code == 'v') {
+#  refine.df$category <- "TV"
+#  } else {
+#  if(refine.df$product_code == 'x') {
+#  refine.df$category <- "Laptop"
+#  }
+#  else {
+#  refine.df$category <- "Tablet"
+#  }
+#  }
+#}
+
+refine.df2$category <- ''
+
+for (i in 1:dim(refine.df2)[1]){
+ if(refine.df2$product_code[i] == 'p') {
+   refine.df2$category[i] <- "Smartphone"
+ } else if (refine.df2$product_code[i] == 'v') {
+   refine.df2$category[i] <- "TV"
+ } else if (refine.df2$product_code[i] == 'x') {
+   refine.df2$category[i] <- "Laptop"
+ } else {
+   refine.df2$category[i] <- "Tablet"
+ }
+}
+```
+
+
+#Add full address for geocoding
+```{r}
+refine.df2$full_address <- paste(refine$address, refine$city, refine$country)
+```
+
+#Create dummy variables for company and product category
+```{r}
+#refine.df$company_philips <- ifelse(grepl("x", refine.df$category, "1", "0"))
+
+#dummy_variables <- refine.df(numbers = 1:25,
+#                    company  = c("philips", "akzo", "van houten", "unilever"),
+#                    product_code = c("p", "x", "v", "q"),
+#                    stringsAsFactors = FALSE)
+#The tutorial I used was for a different use.
+
+#dummy(refine.df$company_philips, data = refine.df, sep = "", fun = as.integer(), verbose = FALSE)
+#"Unsupported index type"
+
+#dummy.data.frame(refine.df, names = refine.df$company, omit.constants = TRUE, dummy.classes = getOption("dummy.classes"))
+#This line of code ran, but did not result in the desired output
+
+company_philips <- NULL
+company_philips[refine.df2$company == "philips"] = 1
+company_philips[refine.df2$company != "philips"] = 0
+
+company_akzo <- NULL
+company_akzo[refine.df2$company == "akzo"] = 1
+company_akzo[refine.df2$company != "akzo"] = 0
+
+company_van_houten <- NULL
+company_van_houten[refine.df2$company == "van houten"] = 1
+company_van_houten[refine.df2$company != "van houten"] = 0
+
+company_unilever <- NULL
+company_unilever[refine.df2$company == "unilever"] = 1
+company_unilever[refine.df2$company != "unilever"] = 0
+
+product_smartphone <- NULL
+product_smartphone[refine.df2$category == "Smartphone"] = 1
+product_smartphone[refine.df2$category != "Smartphone"] = 0
+
+product_tv <- NULL
+product_tv[refine.df2$category == "TV"] = 1
+product_tv[refine.df2$category != "TV"] = 0
+
+product_laptop <- NULL
+product_laptop[refine.df2$category == "Laptop"] = 1
+product_laptop[refine.df2$category != "Laptop"] = 0
+
+product_tablet <- NULL
+product_tablet[refine.df2$category == "Tablet"] = 1
+product_tablet[refine.df2$category != "Tablet"] = 0
+
+```
+
